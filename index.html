@@ -201,21 +201,16 @@
       </div>
     </div>
     <div style="margin-top:10px;">
-      <button onclick="generarEnlaces()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:10px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:13px;">Generar enlaces para buscar en km77</button>
+      <button onclick="generarEnlaces()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:10px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:13px;">Generar enlaces</button>
     </div>
-    <p class="hint">Se abren en pestañas nuevas. Busca la fila "Emisiones de CO₂ WLTP" en la ficha y escribe el número abajo a mano — esto no lo hace por ti, solo te acerca a la página correcta.</p>
+    <p class="hint">Se abren en pestañas nuevas. Busca la fila "Emisiones de CO₂ WLTP" en la ficha y escribe el número abajo.</p>
 
     <div id="enlacesResultado" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;"></div>
 
     <label>Emisiones CO₂ WLTP (g/km)</label>
     <input type="number" id="co2" value="120" min="0">
-
-    <details style="margin-top:14px;">
-      <summary style="cursor:pointer; color:var(--dim); font-size:12px;">Alternativa: cargar varios coches desde km77_data.json (scraper por lotes)</summary>
-      <div class="filebtn" onclick="document.getElementById('fileInput').click()">📄 Seleccionar archivo JSON</div>
-      <input type="file" id="fileInput" accept=".json" style="display:none">
-      <select id="carSelect" style="display:none"></select>
-    </details>
+   <br>
+  <br>
 
     <div class="co2meter"><div class="needle" id="needle" style="left:30%"></div></div>
     <div class="co2labels"><span style="left:0%">0</span><span style="left:60%">120</span><span style="left:80%">160</span><span style="left:100%">200+</span></div>
@@ -301,14 +296,40 @@
   <label>Precio esperado de venta</label>
   <input type="number" id="precioVenta" value="12500">
 
-  <label>Reserva para impuestos (%)</label>
-  <input type="number" id="irpfPct" value="22" step="0.1">
+  <label>Reserva para impuestos</label>
+  <div class="toggle-group">
+    <button id="btnIrpfPct" class="active" onclick="setIrpfModo('pct')">% del margen</button>
+    <button id="btnIrpfFijo" onclick="setIrpfModo('fijo')">Importe fijo</button>
+  </div>
+  <input type="number" id="irpfPct" value="22" step="0.1" style="margin-top:12px;">
+  <p class="hint" id="irpfHint">% aplicado sobre el margen bruto (venta − total invertido).</p>
 
   <label>Cuota autónomo (€)</label>
   <input type="number" id="autonomo" value="85">
 
   <label>Intereses préstamo (€)</label>
   <input type="number" id="prestamo" value="50">
+
+  <details style="margin-top:10px;">
+    <summary style="cursor:pointer; color:var(--dim); font-size:12px;">Calcular intereses de un préstamo</summary>
+    <div style="margin-top:10px;">
+      <label>Capital prestado (€)</label>
+      <input type="number" id="lnCapital" value="10000">
+      <label>Interés TIN anual (%)</label>
+      <input type="number" id="lnTin" value="7" step="0.01">
+      <label>Plazo (meses)</label>
+      <input type="number" id="lnMeses" value="24">
+      <div style="margin-top:10px;">
+        <button type="button" onclick="calcularPrestamo()" style="width:100%; background:var(--panel2); border:1px solid var(--teal); color:var(--teal); border-radius:6px; padding:9px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12.5px;">Calcular</button>
+      </div>
+      <div class="band" style="margin-top:12px;"><span class="lbl">Cuota mensual</span><span class="val" id="lnCuota">—</span></div>
+      <div class="band"><span class="lbl">Interés total del préstamo</span><span class="val" id="lnInteresTotal">—</span></div>
+      <div style="margin-top:8px;">
+        <button type="button" onclick="usarInteresPrestamo()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:9px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12.5px;">Usar esta cuota mensual arriba ↑</button>
+      </div>
+      <p class="hint">Sistema de cuota fija (francés), orientativo. Sube la cuota mensual (no el interés total) porque si vendes el coche en un mes y cancelas el préstamo, ese es el coste real que asumes — pero ten en cuenta que al cancelar anticipadamente normalmente también devuelves el capital pendiente de golpe, y el banco puede cobrar una comisión de cancelación que esto no incluye.</p>
+    </div>
+  </details>
 
   <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
     <div class="band"><span class="lbl">Margen bruto</span><span class="val" id="outMargen">—</span></div>
@@ -389,15 +410,69 @@ function fmt(n){
 function calcBeneficio(){
  const venta=parseFloat(document.getElementById('precioVenta').value)||0;
  const total=parseFloat(document.getElementById('outTotalFinal').textContent.replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
- const irpfPct=parseFloat(document.getElementById('irpfPct').value)||0;
+ const irpfVal=parseFloat(document.getElementById('irpfPct').value)||0;
  const autonomo=parseFloat(document.getElementById('autonomo').value)||0;
  const prestamo=parseFloat(document.getElementById('prestamo').value)||0;
  const margen=venta-total;
- const irpf=Math.max(0,margen)*irpfPct/100;
+ const irpf = irpfModo === 'fijo' ? irpfVal : Math.max(0,margen)*irpfVal/100;
  const neto=margen-irpf-autonomo-prestamo;
  document.getElementById('outMargen').textContent=fmt(margen);
  document.getElementById('outIrpf').textContent=fmt(irpf);
  document.getElementById('outNeto').textContent=fmt(neto);
+}
+
+let irpfModo = 'pct';
+function setIrpfModo(modo){
+  irpfModo = modo;
+  document.getElementById('btnIrpfPct').classList.toggle('active', modo==='pct');
+  document.getElementById('btnIrpfFijo').classList.toggle('active', modo==='fijo');
+  const input = document.getElementById('irpfPct');
+  const hint = document.getElementById('irpfHint');
+  if(modo === 'pct'){
+    input.step = '0.1';
+    hint.textContent = '% aplicado sobre el margen bruto (venta − total invertido).';
+  } else {
+    input.step = '1';
+    hint.textContent = 'Importe fijo en euros que apartas para impuestos, independientemente del margen.';
+  }
+  calcBeneficio();
+}
+
+function calcularPrestamo(){
+  const capital = parseFloat(document.getElementById('lnCapital').value) || 0;
+  const tinAnual = parseFloat(document.getElementById('lnTin').value) || 0;
+  const meses = parseFloat(document.getElementById('lnMeses').value) || 0;
+
+  if(capital <= 0 || meses <= 0){
+    document.getElementById('lnCuota').textContent = '—';
+    document.getElementById('lnInteresTotal').textContent = '—';
+    return;
+  }
+
+  const iMensual = tinAnual/100/12;
+  let cuota, interesTotal;
+  if(iMensual === 0){
+    cuota = capital/meses;
+    interesTotal = 0;
+  } else {
+    cuota = capital * iMensual / (1 - Math.pow(1+iMensual, -meses));
+    interesTotal = cuota*meses - capital;
+  }
+
+  document.getElementById('lnCuota').textContent = fmt(cuota);
+  document.getElementById('lnInteresTotal').textContent = fmt(interesTotal);
+  document.getElementById('lnCuota').dataset.raw = cuota;
+  document.getElementById('lnInteresTotal').dataset.raw = interesTotal;
+}
+
+function usarInteresPrestamo(){
+  const raw = document.getElementById('lnCuota').dataset.raw;
+  if(raw === undefined){
+    calcularPrestamo();
+  }
+  const valor = parseFloat(document.getElementById('lnCuota').dataset.raw) || 0;
+  document.getElementById('prestamo').value = Math.round(valor*100)/100;
+  calcBeneficio();
 }
 
 function calc(){
@@ -527,21 +602,11 @@ function generarEnlaces(){
   const modeloSlug = slugify(modelo);
 
   const enlaces = [];
-  if(anio){
-    enlaces.push({
-      texto: `km77 · ${marca} ${modelo} ${anio} (directo)`,
-      url: `https://www.km77.com/coches/${marcaSlug}/${modeloSlug}/${anio}/datos`
-    });
-  }
   enlaces.push({
-    texto: `km77 · ${marca} ${modelo} (ficha genérica, solo generación actual)`,
-    url: `https://www.km77.com/coches/${marcaSlug}/${modeloSlug}/datos`
+    texto: `km77 · ${marca} ${modelo} (incluye descatalogados)`,
+    url: `https://www.km77.com/coches/${marcaSlug}/${modeloSlug}/datos?market[]=available&market[]=discontinued`
   });
-  const queryGoogle = [marca, modelo, anio, motor, 'datos co2'].filter(Boolean).join(' ');
-  enlaces.push({
-    texto: `Buscar en Google dentro de km77.com`,
-    url: `https://www.google.com/search?q=${encodeURIComponent('site:km77.com ' + queryGoogle)}`
-  });
+  const queryGoogle = [marca, modelo, anio, motor, 'Emisiones de CO₂'].filter(Boolean).join(' ');
   enlaces.push({
     texto: `Buscar en Google (sin restringir a km77)`,
     url: `https://www.google.com/search?q=${encodeURIComponent(queryGoogle + ' km77 ficha tecnica')}`
