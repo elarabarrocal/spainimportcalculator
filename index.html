@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de importación de coches (UE → España)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12161a;
+    --panel:#1a2027;
+    --panel2:#20272f;
+    --line:#2b3339;
+    --text:#e9e6df;
+    --dim:#8b95a1;
+    --amber:#e8963c;
+    --teal:#3fa9a0;
+    --red:#d16a5f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    padding:0 0 60px 0;
+  }
+  h1,h2,h3,.disp{font-family:'Barlow Condensed', sans-serif; letter-spacing:.02em;}
+  header{
+    padding:36px 24px 20px;
+    border-bottom:1px solid var(--line);
+    max-width:920px;
+    margin:0 auto;
+  }
+  header .eyebrow{
+    color:var(--amber);
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-weight:700;
+  }
+  header h1{
+    font-size:42px;
+    font-weight:700;
+    margin:6px 0 8px;
+    color:var(--text);
+  }
+  header p{
+    color:var(--dim);
+    font-size:14.5px;
+    max-width:640px;
+    line-height:1.5;
+    margin:0;
+  }
+  main{
+    max-width:2000px;
+    margin:0 auto;
+    padding:28px 24px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:22px;
+  }
+  @media(min-width:1100px){
+    main{grid-template-columns: 2.2fr 1.5fr; align-items:start;}
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px;
+  }
+  .panel h2{
+    font-size:22px;
+    margin:0 0 4px;
+    color:var(--text);
+    font-weight:600;
+  }
+  .panel .sub{color:var(--dim); font-size:12.5px; margin:0 0 18px;}
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--dim);
+    margin:14px 0 6px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  input[type=number], input[type=text], select{
+    width:100%;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--text);
+    padding:10px 12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14.5px;
+  }
+  input:focus, select:focus{outline:1px solid var(--amber); border-color:var(--amber);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .toggle-group{display:flex; gap:8px; margin-top:6px;}
+  .toggle-group button{
+    flex:1;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    color:var(--dim);
+    padding:9px 8px;
+    border-radius:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .toggle-group button.active{
+    border-color:var(--teal);
+    color:var(--teal);
+    background:#16302d;
+  }
+  .filebtn{
+    display:inline-block;
+    border:1px dashed var(--line);
+    border-radius:6px;
+    padding:14px;
+    text-align:center;
+    color:var(--dim);
+    font-size:12.5px;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .filebtn:hover{border-color:var(--amber); color:var(--amber);}
+  #carSelect{margin-top:8px;}
+  .hint{font-size:11.5px; color:var(--dim); margin-top:6px; line-height:1.4;}
+  .warn{
+    background:#2a1f14;
+    border:1px solid #5a4322;
+    color:#e8b878;
+    font-size:12.5px;
+    padding:10px 12px;
+    border-radius:6px;
+    margin-top:14px;
+    line-height:1.45;
+  }
+  /* output panel */
+  .band{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; padding:9px 0; border-bottom:1px solid var(--line);
+  }
+  .band .lbl{color:var(--dim);}
+  .band .val{font-weight:700; font-size:15px;}
+  .band.total{
+    margin-top:6px; border-bottom:none; border-top:2px solid var(--amber);
+    padding-top:16px;
+  }
+  .band.total .lbl{color:var(--text); font-size:15px; font-weight:600;}
+  .band.total .val{color:var(--amber); font-size:26px; font-family:'Barlow Condensed', sans-serif;}
+  .co2meter{
+    margin-top:18px;
+    height:8px;
+    border-radius:4px;
+    background:linear-gradient(90deg, var(--teal) 0%, var(--teal) 60%, var(--amber) 60%, var(--amber) 80%, var(--red) 80%, var(--red) 100%);
+    position:relative;
+  }
+  .co2meter .needle{
+    position:absolute; top:-5px; width:2px; height:18px; background:var(--text);
+  }
+  .co2labels{position:relative; height:14px; font-size:10.5px; color:var(--dim); margin-top:4px;}
+  .co2labels span{position:absolute; transform:translateX(-50%);}
+  .co2labels span:first-child{transform:none;}
+  .co2labels span:last-child{transform:translateX(-100%);}
+  .badge{
+    display:inline-block; font-size:11px; padding:3px 9px; border-radius:20px;
+    font-weight:700; margin-left:8px;
+  }
+  footer.note{
+    max-width:920px; margin:0 auto; padding:0 24px; color:var(--dim); font-size:11.5px; line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Importación de coche — UE a España</h1>
+  <p>Calcula IEDMT, IVA (si aplica) y gastos de matriculación al traer un coche desde otro país de la UE. Estimación orientativa: verifica los tipos autonómicos vigentes con una gestoría antes de decidir.</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Datos del coche</h2>
+    <p class="sub">Rellena a mano o carga el JSON generado por el scraper de km77.</p>
+
+    <label>Marca</label>
+    <input type="text" id="marca" placeholder="ej. volkswagen">
+    <label>Modelo</label>
+    <input type="text" id="modelo" placeholder="ej. golf">
+    <div class="row2">
+      <div>
+        <label>Año (opcional)</label>
+        <input type="text" id="anio" placeholder="ej. 2014">
+      </div>
+      <div>
+        <label>Motor/acabado (opcional)</label>
+        <input type="text" id="motor" placeholder="ej. tdi 105">
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <button onclick="generarEnlaces()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:10px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:13px;">Generar enlaces para buscar en km77</button>
+    </div>
+    <p class="hint">Se abren en pestañas nuevas. Busca la fila "Emisiones de CO₂ WLTP" en la ficha y escribe el número abajo a mano — esto no lo hace por ti, solo te acerca a la página correcta.</p>
+
+    <div id="enlacesResultado" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;"></div>
+
+    <label>Emisiones CO₂ WLTP (g/km)</label>
+    <input type="number" id="co2" value="120" min="0">
+
+    <details style="margin-top:14px;">
+      <summary style="cursor:pointer; color:var(--dim); font-size:12px;">Alternativa: cargar varios coches desde km77_data.json (scraper por lotes)</summary>
+      <div class="filebtn" onclick="document.getElementById('fileInput').click()">📄 Seleccionar archivo JSON</div>
+      <input type="file" id="fileInput" accept=".json" style="display:none">
+      <select id="carSelect" style="display:none"></select>
+    </details>
+
+    <div class="co2meter"><div class="needle" id="needle" style="left:30%"></div></div>
+    <div class="co2labels"><span style="left:0%">0</span><span style="left:60%">120</span><span style="left:80%">160</span><span style="left:100%">200+</span></div>
+
+    <label>Precio de compra</label>
+     <input type="number" id="precio" value="20000" min="0">
+     <div style="margin-top:10px;">
+       <select id="precioTipo">
+           <option value="sinimp">Ya es precio sin impuestos</option>
+           <option value="coniva">Incluye IVA del país de origen</option>
+       </select>
+     </div>
+     <div id="ivaOrigenBox" style="display:none">
+      <label>% IVA del país de origen (para descontarlo)</label>
+      <input type="number" id="ivaOrigen" value="21" min="0" step="0.1">
+      <p class="hint">Se resta ese IVA para calcular la base imponible española. Ej: Alemania 19%, Francia 20%, Portugal 23%.</p>
+    </div>
+
+    <label>¿El vehículo es "nuevo" a efectos de IVA?</label>
+    <div class="toggle-group">
+      <button id="btnUsado" class="active" onclick="setNuevo(false)">Usado (&gt;6 meses y &gt;6.000 km)</button>
+      <button id="btnNuevo" onclick="setNuevo(true)">Nuevo (&lt;6 meses o &lt;6.000 km)</button>
+    </div>
+    <p class="hint">Se cumple "nuevo" si se da CUALQUIERA de las dos condiciones, no las dos a la vez. Si es nuevo, España cobra el 21% de IVA como adquisición intracomunitaria (con derecho a recuperar el IVA pagado en origen).</p>
+
+    <label>Comunidad autónoma de matriculación</label>
+    <select id="ccaa">
+      <option value="estatal">Otra (tipo estatal)</option>
+      <option value="catalunya">Catalunya</option>
+      <option value="andalucia">Andalucía</option>
+      <option value="baleares">Illes Balears</option>
+      <option value="asturias">Asturias</option>
+      <option value="cantabria">Cantabria</option>
+      <option value="murcia">Región de Murcia</option>
+      <option value="valencia">Comunitat Valenciana</option>
+    </select>
+    <div class="warn" id="ccaaWarn" style="display:none"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Otros gastos</h2>
+    <p class="sub">Importes orientativos 2026 — edítalos si tu gestoría te da otra cifra.</p>
+
+    <label>Tasa DGT 1.1 (matriculación)</label>
+    <input type="number" id="tasaDgt" value="99.77" step="0.01">
+
+    <label>ITV de importación / conformidad</label>
+    <input type="number" id="itv" value="100">
+
+    <label>Placas de matrícula</label>
+    <input type="number" id="placas" value="40">
+
+    <label>Gestoría</label>
+    <input type="number" id="gestoria" value="200">
+
+    <label>Transporte del vehículo</label>
+    <input type="number" id="transporte" value="0">
+
+    <label>Documentación</label>
+    <select id="homologacion">
+      <option value="0">Tengo COC</option>
+      <option value="100">Necesito ficha reducida (+100 €)</option>
+    </select>
+
+
+    <div style="margin-top:26px; border-top:1px solid var(--line); padding-top:18px;">
+      <div class="band"><span class="lbl">Base imponible (sin IVA)</span><span class="val" id="outBase">—</span></div>
+      <div class="band"><span class="lbl">IEDMT (impuesto matriculación) <span id="tramoBadge" class="badge"></span></span><span class="val" id="outIedmt">—</span></div>
+      <div class="band"><span class="lbl">IVA España (si aplica)</span><span class="val" id="outIva">—</span></div>
+      <div class="band"><span class="lbl">Tasa DGT + ITV + placas + gestoría</span><span class="val" id="outFijos">—</span></div>
+      <div class="band"><span class="lbl">Transporte</span><span class="val" id="outTransporte">—</span></div>
+      <div class="band total"><span class="lbl">Total gastos de importación</span><span class="val" id="outTotal">—</span></div>
+
+      <div class="band" style="margin-top:14px;"><span class="lbl">Precio de compra del coche</span><span class="val" id="outPrecioCompra">—</span></div>
+      <div class="band total"><span class="lbl">TOTAL (compra + importación)</span><span class="val" id="outTotalFinal">—</span></div>
+    </div>
+  </section>
+
+<section class="panel">
+  <h2>Calculadora de beneficio</h2>
+  <p class="sub">Estimación rápida del beneficio de la operación.</p>
+
+  <label>Precio esperado de venta</label>
+  <input type="number" id="precioVenta" value="12500">
+
+  <label>Reserva para impuestos (%)</label>
+  <input type="number" id="irpfPct" value="22" step="0.1">
+
+  <label>Cuota autónomo (€)</label>
+  <input type="number" id="autonomo" value="85">
+
+  <label>Intereses préstamo (€)</label>
+  <input type="number" id="prestamo" value="50">
+
+  <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
+    <div class="band"><span class="lbl">Margen bruto</span><span class="val" id="outMargen">—</span></div>
+    <div class="band"><span class="lbl">IRPF estimado</span><span class="val" id="outIrpf">—</span></div>
+    <div class="band"><span class="lbl">Beneficio neto</span><span class="val" id="outNeto">—</span></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="note">
+  Estimación educativa, no es asesoría fiscal. Tramos IEDMT estatales 2026: 0% ≤120 g/km · 4,75% 120–160 · 9,75% 160–200 · 14,75% &gt;200 (sobre precio sin impuestos). Tipo autonómico real en el tramo &gt;200 g/km (fuente: Agencia Tributaria, tabla de tipos impositivos, actualizada 03/03/2026): Catalunya, Illes Balears, Asturias y Comunitat Valenciana 16% · Región de Murcia 15,9% · Cantabria 15% · Andalucía sin cambio real (14,75%). El resto de tramos no varía por CCAA para turismos. El IEDMT se declara con el modelo 576 ante la Agencia Tributaria en los 30 días siguientes a la entrada del vehículo.
+</footer>
+
+<script>
+let nuevo = false;
+function setNuevo(v){
+  nuevo = v;
+  document.getElementById('btnUsado').classList.toggle('active', !v);
+  document.getElementById('btnNuevo').classList.toggle('active', v);
+  
+['precioVenta','irpfPct','autonomo','prestamo'].forEach(id=>document.getElementById(id).addEventListener('input',calcBeneficio));
+
+calc();
+}
+
+document.getElementById('precioTipo').addEventListener('change', e=>{
+  document.getElementById('ivaOrigenBox').style.display = e.target.value === 'coniva' ? 'block' : 'none';
+  
+['precioVenta','irpfPct','autonomo','prestamo'].forEach(id=>document.getElementById(id).addEventListener('input',calcBeneficio));
+
+calc();
+});
+
+// Fuente: Agencia Tributaria, "Tipos impositivos" (actualizado 03/03/2026).
+// Solo el tramo >200 g/km cambia respecto al estatal (14,75%); el resto de
+// tramos son iguales en todas las CCAA para turismos.
+const topTramoCcaa = {
+  estatal: 0.1475,
+  catalunya: 0.16,
+  andalucia: 0.1475,   // sin cambio real para turismos pese a estar "modificado"
+  baleares: 0.16,
+  asturias: 0.16,
+  cantabria: 0.15,
+  murcia: 0.159,
+  valencia: 0.16
+};
+
+const ccaaInfo = {
+  estatal: null,
+  catalunya: "Catalunya sube el tramo >200 g/km del 14,75% estatal al 16%. Ya aplicado en el cálculo.",
+  andalucia: null, // sin diferencia real para turismos
+  baleares: "Illes Balears sube el tramo >200 g/km al 16%. Ya aplicado en el cálculo.",
+  asturias: "Asturias sube el tramo >200 g/km al 16%. Ya aplicado en el cálculo.",
+  cantabria: "Cantabria sube el tramo >200 g/km al 15%. Ya aplicado en el cálculo.",
+  murcia: "Región de Murcia sube el tramo >200 g/km al 15,9%. Ya aplicado en el cálculo.",
+  valencia: "Comunitat Valenciana sube el tramo >200 g/km al 16%. Ya aplicado en el cálculo."
+};
+
+document.getElementById('ccaa').addEventListener('change', calc);
+document.getElementById('homologacion').addEventListener('change', calc);
+
+function iedmtTramo(co2, ccaa){
+  if(co2 <= 120) return {tipo:0, label:"0% · ≤120 g/km"};
+  if(co2 <= 160) return {tipo:0.0475, label:"4,75% · 120–160 g/km"};
+  if(co2 <= 200) return {tipo:0.0975, label:"9,75% · 160–200 g/km"};
+  const tipo = topTramoCcaa[ccaa] ?? 0.1475;
+  const pctTexto = (tipo*100).toString().replace('.', ',');
+  const esAutonomico = tipo !== 0.1475;
+  return {tipo, label:`${pctTexto}% · >200 g/km${esAutonomico ? ' (tipo autonómico)' : ''}`};
+}
+
+function fmt(n){
+  return n.toLocaleString('es-ES', {style:'currency', currency:'EUR', maximumFractionDigits:2});
+}
+
+
+function calcBeneficio(){
+ const venta=parseFloat(document.getElementById('precioVenta').value)||0;
+ const total=parseFloat(document.getElementById('outTotalFinal').textContent.replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
+ const irpfPct=parseFloat(document.getElementById('irpfPct').value)||0;
+ const autonomo=parseFloat(document.getElementById('autonomo').value)||0;
+ const prestamo=parseFloat(document.getElementById('prestamo').value)||0;
+ const margen=venta-total;
+ const irpf=Math.max(0,margen)*irpfPct/100;
+ const neto=margen-irpf-autonomo-prestamo;
+ document.getElementById('outMargen').textContent=fmt(margen);
+ document.getElementById('outIrpf').textContent=fmt(irpf);
+ document.getElementById('outNeto').textContent=fmt(neto);
+}
+
+function calc(){
+  const co2 = parseFloat(document.getElementById('co2').value) || 0;
+  let precio = parseFloat(document.getElementById('precio').value) || 0;
+  const precioTipo = document.getElementById('precioTipo').value;
+  const ivaOrigen = parseFloat(document.getElementById('ivaOrigen').value) || 0;
+
+  let base = precio;
+  if(precioTipo === 'coniva'){
+    base = precio / (1 + ivaOrigen/100);
+  }
+
+  const tramo = iedmtTramo(co2, document.getElementById('ccaa').value);
+  const iedmt = base * tramo.tipo;
+
+  const iva = nuevo ? base * 0.21 : 0;
+
+  const tasaDgt = parseFloat(document.getElementById('tasaDgt').value) || 0;
+  const itv = parseFloat(document.getElementById('itv').value) || 0;
+  const placas = parseFloat(document.getElementById('placas').value) || 0;
+  const gestoria = parseFloat(document.getElementById('gestoria').value) || 0;
+  const transporte = parseFloat(document.getElementById('transporte').value) || 0;
+  const homologacion = parseFloat(document.getElementById('homologacion').value) || 0;
+
+  const fijos = tasaDgt + itv + placas + gestoria + homologacion;
+  const totalGastos = iedmt + iva + fijos + transporte;
+  const totalFinal = totalGastos + precio;
+
+  document.getElementById('outBase').textContent = fmt(base);
+  document.getElementById('outIedmt').textContent = fmt(iedmt);
+  document.getElementById('tramoBadge').textContent = tramo.label;
+  document.getElementById('tramoBadge').style.background = tramo.tipo===0?'#16302d':tramo.tipo<0.1?'#2a2414':'#2a1414';
+  document.getElementById('tramoBadge').style.color = tramo.tipo===0?'#3fa9a0':tramo.tipo<0.1?'#e8963c':'#d16a5f';
+  document.getElementById('outIva').textContent = nuevo ? fmt(iva) : "No aplica (usado)";
+  document.getElementById('outFijos').textContent = fmt(fijos);
+  document.getElementById('outTransporte').textContent = fmt(transporte);
+  document.getElementById('outTotal').textContent = fmt(totalGastos);
+  document.getElementById('outPrecioCompra').textContent = fmt(precio);
+  document.getElementById('outTotalFinal').textContent = fmt(totalFinal);
+
+  // aguja sobre escala 0-200, tope en 200+ como en las etiquetas
+  const pct = Math.min(co2/200*100, 100);
+  document.getElementById('needle').style.left = pct + '%';
+
+  const ccaa = document.getElementById('ccaa').value;
+  const warnBox = document.getElementById('ccaaWarn');
+  if(ccaaInfo[ccaa]){
+    warnBox.style.display = 'block';
+    warnBox.textContent = '⚠ ' + ccaaInfo[ccaa];
+  } else {
+    warnBox.style.display = 'none';
+  }
+  calcBeneficio();
+}
+
+['co2','precio','ivaOrigen','tasaDgt','itv','placas','gestoria','transporte','homologacion'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calc);
+});
+
+// Carga de JSON del scraper
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = JSON.parse(ev.target.result);
+      const select = document.getElementById('carSelect');
+      select.innerHTML = '';
+      data.forEach((car, i)=>{
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = car.nombre + (car.co2_wltp_g_km ? ` (${car.co2_wltp_g_km} g/km)` : '');
+        select.appendChild(opt);
+      });
+      select.style.display = 'block';
+      select.onchange = function(){
+        const car = data[this.value];
+        if(car.nombre) document.getElementById('nombre').value = car.nombre;
+        if(car.co2_wltp_g_km) document.getElementById('co2').value = car.co2_wltp_g_km;
+        if(car.precio_sin_impuestos){
+          const num = parseFloat(car.precio_sin_impuestos.replace(/[^\d,.-]/g,'').replace('.','').replace(',','.'));
+          if(!isNaN(num)){
+            document.getElementById('precio').value = num;
+            document.getElementById('precioTipo').value = 'sinimp';
+            document.getElementById('ivaOrigenBox').style.display = 'none';
+          }
+        }
+        
+['precioVenta','irpfPct','autonomo','prestamo'].forEach(id=>document.getElementById(id).addEventListener('input',calcBeneficio));
+
+calc();
+      };
+      select.dispatchEvent(new Event('change'));
+    }catch(err){
+      alert('No he podido leer el JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+function slugify(text){
+  return text
+    .toString()
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function generarEnlaces(){
+  const marca = document.getElementById('marca').value.trim();
+  const modelo = document.getElementById('modelo').value.trim();
+  const anio = document.getElementById('anio').value.trim();
+  const motor = document.getElementById('motor').value.trim();
+  const cont = document.getElementById('enlacesResultado');
+  cont.innerHTML = '';
+
+  if(!marca || !modelo){
+    cont.innerHTML = '<p class="hint" style="color:var(--red)">Rellena al menos marca y modelo.</p>';
+    return;
+  }
+
+  const marcaSlug = slugify(marca);
+  const modeloSlug = slugify(modelo);
+
+  const enlaces = [];
+  if(anio){
+    enlaces.push({
+      texto: `km77 · ${marca} ${modelo} ${anio} (directo)`,
+      url: `https://www.km77.com/coches/${marcaSlug}/${modeloSlug}/${anio}/datos`
+    });
+  }
+  enlaces.push({
+    texto: `km77 · ${marca} ${modelo} (ficha genérica, solo generación actual)`,
+    url: `https://www.km77.com/coches/${marcaSlug}/${modeloSlug}/datos`
+  });
+  const queryGoogle = [marca, modelo, anio, motor, 'datos co2'].filter(Boolean).join(' ');
+  enlaces.push({
+    texto: `Buscar en Google dentro de km77.com`,
+    url: `https://www.google.com/search?q=${encodeURIComponent('site:km77.com ' + queryGoogle)}`
+  });
+  enlaces.push({
+    texto: `Buscar en Google (sin restringir a km77)`,
+    url: `https://www.google.com/search?q=${encodeURIComponent(queryGoogle + ' km77 ficha tecnica')}`
+  });
+
+  enlaces.forEach(e=>{
+    const a = document.createElement('a');
+    a.href = e.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = '→ ' + e.texto;
+    a.style.color = 'var(--teal)';
+    a.style.fontSize = '12.5px';
+    a.style.textDecoration = 'none';
+    cont.appendChild(a);
+  });
+}
+
+
+['precioVenta','irpfPct','autonomo','prestamo'].forEach(id=>document.getElementById(id).addEventListener('input',calcBeneficio));
+
+calc();
+</script>
+</body>
+</html>
