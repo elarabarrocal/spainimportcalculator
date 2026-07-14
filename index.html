@@ -323,11 +323,12 @@
         <button type="button" onclick="calcularPrestamo()" style="width:100%; background:var(--panel2); border:1px solid var(--teal); color:var(--teal); border-radius:6px; padding:9px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12.5px;">Calcular</button>
       </div>
       <div class="band" style="margin-top:12px;"><span class="lbl">Cuota mensual</span><span class="val" id="lnCuota">—</span></div>
-      <div class="band"><span class="lbl">Interés total del préstamo</span><span class="val" id="lnInteresTotal">—</span></div>
+      <div class="band"><span class="lbl">· de la cual, interés del mes 1</span><span class="val" id="lnInteresMes1">—</span></div>
+      <div class="band"><span class="lbl">Interés total si agotas todo el plazo</span><span class="val" id="lnInteresTotal">—</span></div>
       <div style="margin-top:8px;">
-        <button type="button" onclick="usarInteresPrestamo()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:9px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12.5px;">Usar esta cuota mensual arriba ↑</button>
+        <button type="button" onclick="usarInteresPrestamo()" style="width:100%; background:var(--amber); border:none; color:#1a1206; font-weight:700; border-radius:6px; padding:9px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12.5px;">Usar el interés de 1 mes arriba ↑</button>
       </div>
-      <p class="hint">Sistema de cuota fija (francés), orientativo. Sube la cuota mensual (no el interés total) porque si vendes el coche en un mes y cancelas el préstamo, ese es el coste real que asumes — pero ten en cuenta que al cancelar anticipadamente normalmente también devuelves el capital pendiente de golpe, y el banco puede cobrar una comisión de cancelación que esto no incluye.</p>
+      <p class="hint">Sistema de cuota fija (francés), orientativo. Solo sube el interés del primer mes (lo que realmente "te cuesta" el préstamo ese mes) — la devolución de capital no es un coste, es dinero tuyo que recuperas. Si cancelas antes de tiempo, el banco puede cobrar además una comisión de cancelación anticipada, que esto no incluye.</p>
     </div>
   </details>
 
@@ -450,27 +451,31 @@ function calcularPrestamo(){
   }
 
   const iMensual = tinAnual/100/12;
-  let cuota, interesTotal;
+  let cuota, interesTotal, interesMes1;
   if(iMensual === 0){
     cuota = capital/meses;
     interesTotal = 0;
+    interesMes1 = 0;
   } else {
     cuota = capital * iMensual / (1 - Math.pow(1+iMensual, -meses));
     interesTotal = cuota*meses - capital;
+    interesMes1 = capital * iMensual;
   }
 
   document.getElementById('lnCuota').textContent = fmt(cuota);
+  document.getElementById('lnInteresMes1').textContent = fmt(interesMes1);
   document.getElementById('lnInteresTotal').textContent = fmt(interesTotal);
   document.getElementById('lnCuota').dataset.raw = cuota;
+  document.getElementById('lnInteresMes1').dataset.raw = interesMes1;
   document.getElementById('lnInteresTotal').dataset.raw = interesTotal;
 }
 
 function usarInteresPrestamo(){
-  const raw = document.getElementById('lnCuota').dataset.raw;
+  const raw = document.getElementById('lnInteresMes1').dataset.raw;
   if(raw === undefined){
     calcularPrestamo();
   }
-  const valor = parseFloat(document.getElementById('lnCuota').dataset.raw) || 0;
+  const valor = parseFloat(document.getElementById('lnInteresMes1').dataset.raw) || 0;
   document.getElementById('prestamo').value = Math.round(valor*100)/100;
   calcBeneficio();
 }
