@@ -322,7 +322,8 @@
     <input type="number" id="gestoria" value="200">
 
     <label>Transporte del vehículo</label>
-    <input type="number" id="transporte" value="0">
+    <input type="text" id="transporte" value="0" placeholder="ej. 100+50+20" inputmode="decimal">
+    <p class="hint" id="transporteHint"></p>
 
     <label>Documentación</label>
     <select id="homologacion">
@@ -411,6 +412,18 @@ function iedmtTramo(co2, ccaa){
   const pctTexto = (tipo*100).toString().replace('.', ',');
   const esAutonomico = tipo !== 0.1475;
   return {tipo, label:`${pctTexto}% · >200 g/km${esAutonomico ? ' (tipo autonómico)' : ''}`};
+}
+
+function evaluarExpresion(str){
+  if(!str || !str.trim()) return 0;
+  const limpio = str.trim().replace(/,/g, '.');
+  if(!/^[0-9+\-*/().\s]+$/.test(limpio)) return NaN;
+  try{
+    const val = Function('"use strict"; return (' + limpio + ')')();
+    return (typeof val === 'number' && isFinite(val)) ? val : NaN;
+  }catch(e){
+    return NaN;
+  }
 }
 
 function fmt(n){
@@ -523,7 +536,19 @@ function calc(){
   const itv = parseFloat(document.getElementById('itv').value) || 0;
   const placas = parseFloat(document.getElementById('placas').value) || 0;
   const gestoria = parseFloat(document.getElementById('gestoria').value) || 0;
-  const transporte = parseFloat(document.getElementById('transporte').value) || 0;
+  const transporteRaw = document.getElementById('transporte').value;
+  const transporteEval = evaluarExpresion(transporteRaw);
+  const transporte = isNaN(transporteEval) ? 0 : transporteEval;
+  const transporteHint = document.getElementById('transporteHint');
+  if(isNaN(transporteEval)){
+    transporteHint.textContent = '⚠ Expresión no válida, solo números y + − * /';
+    transporteHint.style.color = 'var(--red)';
+  } else if(/[+\-*/]/.test(transporteRaw)){
+    transporteHint.textContent = `= ${fmt(transporteEval)}`;
+    transporteHint.style.color = 'var(--teal)';
+  } else {
+    transporteHint.textContent = '';
+  }
   const homologacion = parseFloat(document.getElementById('homologacion').value) || 0;
 
   const fijos = tasaDgt + itv + placas + gestoria;
