@@ -65,6 +65,7 @@
   @media(min-width:1100px){
     main{grid-template-columns: 2.2fr 1.5fr; align-items:start;}
   }
+  .col-left, .col-right{display:flex; flex-direction:column; gap:22px;}
   .panel{
     background:var(--panel);
     border:1px solid var(--line);
@@ -183,6 +184,7 @@
 </header>
 
 <main>
+<div class="col-left">
   <section class="panel">
     <h2>Datos del coche</h2>
     <p class="sub">Rellena a mano o carga el JSON generado por el scraper de km77.</p>
@@ -252,45 +254,6 @@
   </section>
 
   <section class="panel">
-    <h2>Otros gastos</h2>
-    <p class="sub">Importes orientativos 2026 — edítalos si tu gestoría te da otra cifra.</p>
-
-    <label>Tasa DGT 1.1 (matriculación)</label>
-    <input type="number" id="tasaDgt" value="99.77" step="0.01">
-
-    <label>ITV de importación / conformidad</label>
-    <input type="number" id="itv" value="100">
-
-    <label>Placas de matrícula</label>
-    <input type="number" id="placas" value="40">
-
-    <label>Gestoría</label>
-    <input type="number" id="gestoria" value="200">
-
-    <label>Transporte del vehículo</label>
-    <input type="number" id="transporte" value="0">
-
-    <label>Documentación</label>
-    <select id="homologacion">
-      <option value="0">Tengo COC</option>
-      <option value="100">Necesito ficha reducida (+100 €)</option>
-    </select>
-
-
-    <div style="margin-top:26px; border-top:1px solid var(--line); padding-top:18px;">
-      <div class="band"><span class="lbl">Base imponible (sin IVA)</span><span class="val" id="outBase">—</span></div>
-      <div class="band"><span class="lbl">IEDMT (impuesto matriculación) <span id="tramoBadge" class="badge"></span></span><span class="val" id="outIedmt">—</span></div>
-      <div class="band"><span class="lbl">IVA España (si aplica)</span><span class="val" id="outIva">—</span></div>
-      <div class="band"><span class="lbl">Tasa DGT + ITV + placas + gestoría</span><span class="val" id="outFijos">—</span></div>
-      <div class="band"><span class="lbl">Transporte</span><span class="val" id="outTransporte">—</span></div>
-      <div class="band total"><span class="lbl">Total gastos de importación</span><span class="val" id="outTotal">—</span></div>
-
-      <div class="band" style="margin-top:14px;"><span class="lbl">Precio de compra del coche</span><span class="val" id="outPrecioCompra">—</span></div>
-      <div class="band total"><span class="lbl">TOTAL (compra + importación)</span><span class="val" id="outTotalFinal">—</span></div>
-    </div>
-  </section>
-
-<section class="panel">
   <h2>Calculadora de beneficio</h2>
   <p class="sub">Estimación rápida del beneficio de la operación.</p>
 
@@ -335,10 +298,54 @@
 
   <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
     <div class="band"><span class="lbl">Margen bruto</span><span class="val" id="outMargen">—</span></div>
-    <div class="band"><span class="lbl">IRPF estimado</span><span class="val" id="outIrpf">—</span></div>
+    <div class="band"><span class="lbl">Reserva impuestos</span><span class="val" id="outIrpf">—</span></div>
     <div class="band"><span class="lbl">Beneficio neto</span><span class="val" id="outNeto">—</span></div>
   </div>
 </section>
+</div>
+
+<div class="col-right">
+  <section class="panel">
+    <h2>Otros gastos</h2>
+    <p class="sub">Importes orientativos 2026 — edítalos si tu gestoría te da otra cifra.</p>
+
+    <label>Tasa DGT 1.1 (matriculación)</label>
+    <input type="number" id="tasaDgt" value="99.77" step="0.01">
+
+    <label>ITV de importación / conformidad</label>
+    <input type="number" id="itv" value="100">
+
+    <label>Placas de matrícula</label>
+    <input type="number" id="placas" value="40">
+
+    <label>Gestoría</label>
+    <input type="number" id="gestoria" value="200">
+
+    <label>Transporte del vehículo</label>
+    <input type="number" id="transporte" value="0">
+
+    <label>Documentación</label>
+    <select id="homologacion">
+      <option value="0">Tengo COC</option>
+      <option value="100">Necesito ficha reducida (+100 €)</option>
+    </select>
+
+
+    <div style="margin-top:26px; border-top:1px solid var(--line); padding-top:18px;">
+      <div class="band"><span class="lbl">Base imponible (sin IVA)</span><span class="val" id="outBase">—</span></div>
+      <div class="band"><span class="lbl">IEDMT (impuesto matriculación) <span id="tramoBadge" class="badge"></span></span><span class="val" id="outIedmt">—</span></div>
+      <div class="band"><span class="lbl">IVA España (si aplica)</span><span class="val" id="outIva">—</span></div>
+      <div class="band"><span class="lbl">Tasa DGT + ITV + placas + gestoría</span><span class="val" id="outFijos">—</span></div>
+      <div class="band"><span class="lbl">Transporte</span><span class="val" id="outTransporte">—</span></div>
+      <div class="band total"><span class="lbl">Total gastos de importación</span><span class="val" id="outTotal">—</span></div>
+      <div class="band" style="margin-top:14px;"><span class="lbl">Precio de compra del coche</span><span class="val" id="outPrecioCompra">—</span></div>
+      <div class="band total"><span class="lbl">TOTAL (compra + importación)</span><span class="val" id="outTotalFinal">—</span></div>    
+      <p id="ventaBeneficioLine" style="color:var(--text); font-size:13px; line-height:1.4; margin-top:14px;">Precio esperado de venta: — · Beneficio real: —</p>
+      <div class="band total"><span class="lbl">ROI estimado</span><span class="val" id="outRoi">—</span></div>
+      <p class="hint">Beneficio neto (tras impuestos, autónomo e interés) ÷ inversión total, sobre el precio de venta que pongas en "Calculadora de beneficio".</p>
+    </div>
+  </section>
+</div>
 
 </main>
 
@@ -421,6 +428,19 @@ function calcBeneficio(){
  document.getElementById('outMargen').textContent=fmt(margen);
  document.getElementById('outIrpf').textContent=fmt(irpf);
  document.getElementById('outNeto').textContent=fmt(neto);
+
+ const roiEl = document.getElementById('outRoi');
+ if(total > 0){
+   const roi = neto/total*100;
+   roiEl.textContent = roi.toFixed(1) + '%';
+   roiEl.style.color = roi >= 0 ? 'var(--teal)' : 'var(--red)';
+ } else {
+   roiEl.textContent = '—';
+   roiEl.style.color = '';
+ }
+
+ document.getElementById('ventaBeneficioLine').textContent =
+   `Precio esperado de venta: ${fmt(venta)} · Beneficio real: ${fmt(neto)}`;
 }
 
 let irpfModo = 'pct';
