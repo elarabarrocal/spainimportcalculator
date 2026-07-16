@@ -340,7 +340,8 @@
       <div class="band total"><span class="lbl">Total gastos de importación</span><span class="val" id="outTotal">—</span></div>
       <div class="band" style="margin-top:14px;"><span class="lbl">Precio de compra del coche</span><span class="val" id="outPrecioCompra">—</span></div>
       <div class="band total"><span class="lbl">TOTAL (compra + importación)</span><span class="val" id="outTotalFinal">—</span></div>    
-      <p id="ventaBeneficioLine" style="color:var(--text); font-size:13px; line-height:1.4; margin-top:14px;">Precio esperado de venta: — · Beneficio real: —</p>
+      <p id="outVentaEsperada" style="color:var(--text); font-size:13px; line-height:1.4; margin-top:14px; margin-bottom:0;">Precio esperado de venta: —</p>
+      <p id="outBeneficioReal" style="color:var(--text); font-size:13px; line-height:1.4; margin-top:4px;">Beneficio real: —</p>
       <div class="band total"><span class="lbl">ROI estimado</span><span class="val" id="outRoi">—</span></div>
       <p class="hint">Beneficio neto (tras impuestos, autónomo e interés) ÷ inversión total, sobre el precio de venta que pongas en "Calculadora de beneficio".</p>
     </div>
@@ -439,8 +440,8 @@ function calcBeneficio(){
    roiEl.style.color = '';
  }
 
- document.getElementById('ventaBeneficioLine').textContent =
-   `Precio esperado de venta: ${fmt(venta)} · Beneficio real: ${fmt(neto)}`;
+ document.getElementById('outVentaEsperada').textContent = `Precio esperado de venta: ${fmt(venta)}`;
+ document.getElementById('outBeneficioReal').textContent = `Beneficio real: ${fmt(neto)}`;
 }
 
 let irpfModo = 'pct';
