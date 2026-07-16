@@ -336,6 +336,7 @@
       <div class="band"><span class="lbl">IEDMT (impuesto matriculación) <span id="tramoBadge" class="badge"></span></span><span class="val" id="outIedmt">—</span></div>
       <div class="band"><span class="lbl">IVA España (si aplica)</span><span class="val" id="outIva">—</span></div>
       <div class="band"><span class="lbl">Tasa DGT + ITV + placas + gestoría</span><span class="val" id="outFijos">—</span></div>
+      <div class="band"><span class="lbl">Documentación</span><span class="val" id="outHomologacion">—</span></div>
       <div class="band"><span class="lbl">Transporte</span><span class="val" id="outTransporte">—</span></div>
       <div class="band total"><span class="lbl">Total gastos de importación</span><span class="val" id="outTotal">—</span></div>
       <div class="band" style="margin-top:14px;"><span class="lbl">Precio de compra del coche</span><span class="val" id="outPrecioCompra">—</span></div>
@@ -525,8 +526,8 @@ function calc(){
   const transporte = parseFloat(document.getElementById('transporte').value) || 0;
   const homologacion = parseFloat(document.getElementById('homologacion').value) || 0;
 
-  const fijos = tasaDgt + itv + placas + gestoria + homologacion;
-  const totalGastos = iedmt + iva + fijos + transporte;
+  const fijos = tasaDgt + itv + placas + gestoria;
+  const totalGastos = iedmt + iva + fijos + homologacion + transporte;
   const totalFinal = totalGastos + precio;
 
   document.getElementById('outBase').textContent = fmt(base);
@@ -536,6 +537,7 @@ function calc(){
   document.getElementById('tramoBadge').style.color = tramo.tipo===0?'#3fa9a0':tramo.tipo<0.1?'#e8963c':'#d16a5f';
   document.getElementById('outIva').textContent = nuevo ? fmt(iva) : "No aplica (usado)";
   document.getElementById('outFijos').textContent = fmt(fijos);
+  document.getElementById('outHomologacion').textContent = homologacion > 0 ? `Ficha reducida: ${fmt(homologacion)}` : 'COC incluido';
   document.getElementById('outTransporte').textContent = fmt(transporte);
   document.getElementById('outTotal').textContent = fmt(totalGastos);
   document.getElementById('outPrecioCompra').textContent = fmt(precio);
